@@ -1,0 +1,30 @@
+[Unit]
+Description=Polymarket CLOB v2 TypeScript execution shim
+Documentation=Local HTTP wrapper around @polymarket/clob-client-v2 (loopback only).
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/polymarket/ts_executor
+EnvironmentFile=/root/polymarket/.env
+ExecStart=/usr/bin/node /root/polymarket/ts_executor/server.mjs
+
+# Restart policy: always come back, but don't thrash on a permanent failure
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+# Logs go to journald
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ts-executor
+
+# Light hardening (loopback-only service, so the surface is small)
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

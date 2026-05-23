@@ -1,0 +1,16 @@
+[Unit]
+Description=Polymarket bankroll reconciler (one-shot, fired by timer)
+Documentation=Pulls real Polymarket portfolio value into system_config.bankroll_usd
+After=polymarket-ts-executor.service network-online.target
+Wants=polymarket-ts-executor.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/root/polymarket
+EnvironmentFile=/root/polymarket/.env
+ExecStart=/root/polymarket/venv/bin/python /root/polymarket/scripts/reconcile_real_bankroll.py
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bankroll-reconciler

@@ -1,0 +1,24 @@
+# Drop this into /etc/caddy/Caddyfile (or import from your existing one).
+# Replace analyzer.example.com with your actual subdomain.
+#
+# Caddy auto-provisions a Let's Encrypt cert on first request.
+# Make sure DNS A record points to your bot server's public IP first.
+
+analyzer.example.com {
+    # Long timeouts — fetching active wallets can take 60-120s.
+    reverse_proxy 127.0.0.1:8001 {
+        transport http {
+            read_timeout  10m
+            write_timeout 10m
+            dial_timeout  10s
+        }
+    }
+
+    encode gzip
+
+    # Light request logging; rotate via Caddy defaults.
+    log {
+        output file /var/log/caddy/analyzer.log
+        format console
+    }
+}

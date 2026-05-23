@@ -1,0 +1,18 @@
+[Unit]
+Description=Polymarket Trader Analyzer (FastAPI worker)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/polymarket/analyzer
+EnvironmentFile=/root/polymarket/analyzer/.env
+# Run uvicorn at low priority so analyzer load can't starve the trading bot.
+ExecStart=/usr/bin/nice -n 10 /root/polymarket/analyzer/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

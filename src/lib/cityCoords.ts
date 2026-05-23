@@ -1,0 +1,61 @@
+// City → (lat, lon) for the Polymarket-resolution airport/station.
+// Extracted from scripts/seed_stations.sql on 2026-05-22.
+//
+// Used by the Trade Station's weather chart to fetch hourly forecasts
+// from Open-Meteo (free, no API key, CORS-enabled). These coordinates
+// must stay aligned with what Wunderground reports — they identify the
+// same airport, so any divergence between WU observations and OM forecast
+// is real model error, not a location mismatch.
+
+export const CITY_COORDS: Record<string, { lat: number; lon: number }> = {
+  "NYC":           { lat:  40.7772, lon:  -73.8726 },
+  "Chicago":       { lat:  41.9803, lon:  -87.9090 },
+  "Miami":         { lat:  25.7959, lon:  -80.2870 },
+  "Los Angeles":   { lat:  33.9425, lon: -118.4081 },
+  "Dallas":        { lat:  32.8481, lon:  -96.8511 },
+  "Atlanta":       { lat:  33.6407, lon:  -84.4277 },
+  "Houston":       { lat:  29.6454, lon:  -95.2789 },
+  "Austin":        { lat:  30.1945, lon:  -97.6699 },
+  "Seattle":       { lat:  47.4444, lon: -122.3138 },
+  "San Francisco": { lat:  37.6213, lon: -122.3790 },
+  "Denver":        { lat:  39.7169, lon: -104.7516 },
+  "London":        { lat:  51.4780, lon:   -0.4610 },
+  "Paris":         { lat:  48.7167, lon:    2.3842 },
+  "Madrid":        { lat:  40.4667, lon:   -3.5556 },
+  "Munich":        { lat:  48.3667, lon:   11.8000 },
+  "Milan":         { lat:  45.5300, lon:    8.6690 },
+  "Amsterdam":     { lat:  52.3156, lon:    4.7903 },
+  "Warsaw":        { lat:  52.1660, lon:   20.9670 },
+  "Helsinki":      { lat:  60.3269, lon:   24.9603 },
+  "Istanbul":      { lat:  41.2608, lon:   28.7418 },
+  "Ankara":        { lat:  39.9500, lon:   32.8830 },
+  "Moscow":        { lat:  55.8331, lon:   37.6167 },
+  "Tel Aviv":      { lat:  31.9964, lon:   34.8963 },
+  "Jeddah":        { lat:  21.7000, lon:   39.1830 },
+  "Hong Kong":     { lat:  22.1500, lon:  113.5920 },
+  "Seoul":         { lat:  37.4670, lon:  126.6330 },
+  "Tokyo":         { lat:  35.6830, lon:  139.7670 },
+  "Busan":         { lat:  35.1000, lon:  129.0330 },
+  "Taipei":        { lat:  25.0697, lon:  121.5500 },
+  "Beijing":       { lat:  40.0799, lon:  116.5847 },
+  "Shanghai":      { lat:  31.1436, lon:  121.8083 },
+  "Guangzhou":     { lat:  23.3924, lon:  113.2990 },
+  "Shenzhen":      { lat:  22.6393, lon:  113.8107 },
+  "Chengdu":       { lat:  30.7500, lon:  103.8670 },
+  "Chongqing":     { lat:  29.7192, lon:  106.6417 },
+  "Wuhan":         { lat:  30.7838, lon:  114.2080 },
+  "Singapore":     { lat:   1.1170, lon:  104.1170 },
+  "Kuala Lumpur":  { lat:   2.7460, lon:  101.7100 },
+  "Manila":        { lat:  14.5170, lon:  121.0000 },
+  "Jakarta":       { lat:  -6.2664, lon:  106.8906 },
+  "Lucknow":       { lat:  26.7500, lon:   80.8830 },
+  "Karachi":       { lat:  24.8960, lon:   66.9380 },
+  "Wellington":    { lat: -41.3272, lon:  174.8047 },
+  "Toronto":       { lat:  43.6667, lon:  -79.4000 },
+  "Mexico City":   { lat:  19.4000, lon:  -99.1830 },
+  "São Paulo":     { lat: -23.4356, lon:  -46.4731 },
+  "Buenos Aires":  { lat: -34.8220, lon:  -58.5360 },
+  "Panama City":   { lat:   9.0700, lon:  -79.3800 },
+  "Cape Town":     { lat: -33.9650, lon:   18.6020 },
+  "Lagos":         { lat:   6.5770, lon:    3.3210 },
+}
