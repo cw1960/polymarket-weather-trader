@@ -2,6 +2,14 @@
   command = "npm run build"
   publish = "dist"
 
+# Netlify auto-installs the repo's requirements.txt (the Python trading backend)
+# during dependency setup, even though this is a Vite/React frontend. The default
+# build image picks Python 3.14, for which scipy ships no wheel -> it tries to
+# compile from source and fails (no Fortran compiler). Pin to 3.11 (scipy has
+# cp311 wheels; matches the bot's venv311). 2026-05-31.
+[build.environment]
+  PYTHON_VERSION = "3.11.9"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
