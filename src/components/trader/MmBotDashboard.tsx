@@ -70,23 +70,25 @@ export default function MmBotDashboard() {
     : true
 
   const isHealthy = status?.process_alive && !status?.kill_switch_tripped && !heartbeatStale
+  // pnl here is now the TRUE LIFETIME P&L (total realized + unrealized), published
+  // by the sync as (real_cash + position_value) - net_deposit. It is NOT a
+  // log-derived estimate anymore. See mm_bot_log_sync.get_cash_balance.
   const pnl = status?.realized_pnl_usd ?? 0
   const pnlClr = pnl > 0.005 ? 'text-emerald-300' : pnl < -0.005 ? 'text-red-300' : 'text-gray-300'
 
-  // Account math (matches Polymarket UI which includes both realized + unrealized P&L)
-  //   Polymarket Portfolio  = Cash + position_value (live mark-to-market)
-  //   Our calculation:
-  //     unrealized_pnl = position_value - cost_of_open_positions
-  //     Portfolio      = starting_balance + realized_pnl + unrealized_pnl
-  //     Cash           = Portfolio - position_value
-  //                    = starting_balance + realized_pnl - cost_of_open_positions
+  // Account math — GROUND TRUTH (2026-05-31 rewrite). The sync reads real USDC
+  // cash from the wallet, so we no longer DERIVE the balance from a log P&L
+  // estimate (which had been overstating the account by ~$259, masking real
+  // losses). Because `pnl` is already the full lifetime P&L (it includes the
+  // live position value via real-cash + positions − deposit), Portfolio is
+  // simply starting_balance + pnl — NO separate unrealized term (adding one
+  // double-counts the open position value).
+  //   Portfolio = net_deposit + lifetime_pnl   (= real cash + position value)
+  //   Cash      = Portfolio − position_value   (= real USDC cash)
   const positionValue = status?.polymarket_portfolio_value ?? 0
-  const openExposure = status?.open_exposure_usd ?? 0
   const startingBalance = status?.starting_balance_usd ?? null
-  const unrealized = positionValue - openExposure
-  const accountTotal = startingBalance != null ? startingBalance + pnl + unrealized : null
-  const cash = accountTotal != null ? accountTotal - positionValue : null
-  const portfolio = accountTotal
+  const portfolio = startingBalance != null ? startingBalance + pnl : null
+  const cash = portfolio != null ? portfolio - positionValue : null
 
   // Group settlements by date for daily P&L
   const byDay: Record<string, { pnl: number; n: number; wins: number; losses: number }> = {}
@@ -166,10 +168,10 @@ export default function MmBotDashboard() {
           big
         />
         <StatusCard
-          label="Realized P&L (trades)"
+          label="Lifetime P&L"
           value={`${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`}
           color={pnlClr}
-          sub="from spread capture (excludes rewards)"
+          sub={startingBalance != null ? `vs $${startingBalance.toFixed(0)} deposited (incl. rewards & losses)` : 'net of deposits'}
           big
         />
       </div>
@@ -187,7 +189,7 @@ export default function MmBotDashboard() {
           label="Cash"
           value={cash != null ? `$${cash.toFixed(2)}` : '—'}
           color="text-cyan-300"
-          sub="spendable USDC (estimated)"
+          sub="real USDC balance (live from wallet)"
           big
         />
         <StatusCard
@@ -214,10 +216,10 @@ export default function MmBotDashboard() {
           big
         />
         <StatusCard
-          label="Realized P&L"
+          label="Lifetime P&L"
           value={`${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`}
           color={pnlClr}
-          sub={`${status?.total_settlements ?? 0} settled`}
+          sub={`${status?.total_settlements ?? 0} settled · net of $${startingBalance != null ? startingBalance.toFixed(0) : '—'} in`}
           big
         />
         <StatusCard
@@ -329,7 +331,7 @@ export default function MmBotDashboard() {
 
       {/* Recent fills */}
       <div className="rounded-lg border border-gray-800 bg-gray-950/40 p-4">
-        <div className="text-base font-semibold text-gray-100 mb-2">💸 Recent fills (last {recentFills.length})</div>
+        <div className="text-base font-semibold text-gray-100 mb-2">💸 Live trades — running position (last {recentFills.length})</div>
         {recentFills.length === 0 ? (
           <div className="text-sm text-gray-500 p-2">{loading ? 'Loading…' : 'No fills yet.'}</div>
         ) : (
@@ -342,6 +344,8 @@ export default function MmBotDashboard() {
                   <th className="text-center py-1.5 px-2 font-normal">Side</th>
                   <th className="text-right py-1.5 px-2 font-normal">Size</th>
                   <th className="text-right py-1.5 px-2 font-normal">Price</th>
+                  <th className="text-right py-1.5 px-2 font-normal">→ Cum Up</th>
+                  <th className="text-right py-1.5 px-2 font-normal">→ Cum Dn</th>
                   <th className="text-right py-1.5 px-2 font-normal">Cost</th>
                   <th className="text-right py-1.5 px-2 font-normal">BTC (binance)</th>
                 </tr>
@@ -356,6 +360,8 @@ export default function MmBotDashboard() {
                     </td>
                     <td className="py-1.5 px-2 text-right font-mono text-gray-300">{f.size}</td>
                     <td className="py-1.5 px-2 text-right font-mono text-cyan-300">{(f.price * 100).toFixed(1)}¢</td>
+                    <td className="py-1.5 px-2 text-right font-mono text-emerald-300">{f.cumulative_up != null ? f.cumulative_up.toFixed(1) : '—'}</td>
+                    <td className="py-1.5 px-2 text-right font-mono text-red-300">{f.cumulative_down != null ? f.cumulative_down.toFixed(1) : '—'}</td>
                     <td className="py-1.5 px-2 text-right font-mono text-gray-300">${f.cost_usd.toFixed(2)}</td>
                     <td className="py-1.5 px-2 text-right font-mono text-gray-500">{f.btc_binance ? `$${f.btc_binance.toFixed(0)}` : '—'}</td>
                   </tr>
